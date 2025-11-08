@@ -2,7 +2,7 @@
 import mysql.connector
 from mysql.connector import Error
 
-class sqlinter():
+class SQLInterface():
   def __init__(self, host, name, username, password):
     self.host = host
     self.database_name = name
@@ -480,6 +480,55 @@ class sqlinter():
             except: pass 
             return None
   
+  def get_row_count(self, tablename):
+        """
+        Retrieves the total number of rows in a specified table.
+
+        Args:
+            tablename (str): The name of the table.
+
+        Returns:
+            int: The total number of rows, or -1 if an error occurs
+                 (e.g., table not found).
+        """
+        from mysql.connector import Error # Ensure Error is imported
+
+        if not self.cursor:
+            print("Error: Not connected to database. Call .connect() first.")
+            return -1
+
+        # Sanitize table name
+        sql_safe_tablename = f"`{tablename.strip('`')}`"
+        
+        query_sql = f"SELECT COUNT(*) FROM {sql_safe_tablename};"
+
+        try:
+            # Execute the query
+            self.cursor.execute(query_sql)
+            
+            # The result will be a single tuple, e.g., (12345,)
+            result = self.cursor.fetchone()
+            
+            # Clear any remaining results
+            self.cursor.fetchall()
+
+            if result:
+                return result[0]  # Return the count
+            else:
+                return -1 # Should not happen, but good to check
+
+        except Error as e:
+            # This will catch "1146 (42S02): Table '...' doesn't exist"
+            print(f"Error getting row count for table '{tablename}': {e}")
+            try: self.cursor.fetchall() # Try to clear cursor on error
+            except: pass
+            return -1
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            try: self.cursor.fetchall()
+            except: pass
+            return -1 
+  
   def get_column_data(self, tablename, column_name):
         # Retrieves all data from a specified column in a table.
         from mysql.connector import Error # Ensure Error is imported for specific exception handling
@@ -724,6 +773,73 @@ class sqlinter():
         except Exception as e:
             print(f"An unexpected error occurred during CSV export: {e}")    
 
+  def get_table_as_json_payload(self, tablename):
+        """
+        Retrieves all data from a table and formats it into the 
+        {"payload": [ ... ]} JSON structure.
+
+        Args:
+            tablename (str): The name of the table to read from.
+
+        Returns:
+            dict: A Python dictionary formatted as requested,
+                  or None if an error occurs.
+        """
+        from mysql.connector import Error # Ensure Error is imported
+
+        if not self.cursor:
+            print("Error: Not connected to database. Call .connect() first.")
+            return None
+
+        # --- Step 1: Get the Column Names ---
+        # We can reuse your existing function for this.
+        # This also handily checks if the table exists.
+        column_names = self.get_column_names(tablename)
+        
+        if not column_names:
+            # get_column_names() will have already printed an error
+            print(f"Aborting: Could not get column names for table '{tablename}'.")
+            return None
+
+        # --- Step 2: Fetch All Rows ---
+        sql_safe_tablename = f"`{tablename.strip('`')}`"
+        query_sql = f"SELECT * FROM {sql_safe_tablename};"
+
+        try:
+            self.cursor.execute(query_sql)
+            
+            # Fetch all rows from the query result
+            all_rows = self.cursor.fetchall()
+            
+            # Clear cursor (follows your established pattern)
+            self.cursor.fetchall() 
+
+            # --- Step 3: Zip Column Names with Row Data ---
+            # This is the core of the algorithm.
+            # We use a list comprehension to create a new dictionary
+            # for each row by "zipping" the column_names list 
+            # with the row's tuple of values.
+            
+            payload_list = [dict(zip(column_names, row)) for row in all_rows]
+
+            # --- Step 4: Wrap in the final "payload" dictionary ---
+            final_output = {
+                "payload": payload_list
+            }
+            
+            return final_output
+
+        except Error as e:
+            print(f"Error fetching all rows from table '{tablename}': {e}")
+            try: self.cursor.fetchall() # Try to clear cursor on error
+            except: pass
+            return None
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            try: self.cursor.fetchall()
+            except: pass
+            return None
+
   def import_dir(self, directory_path):
         """
         Scans a directory for CSV files, and imports them into MySQL tables.
@@ -829,7 +945,7 @@ class sqlinter():
             print(f"An unexpected error occurred while getting column names: {e}")
             return []
   
-  def query(self, tablename, code_value):
+  def query(self, tablename, col, key_col, key):
         from mysql.connector import Error # Ensure Error is imported
 
         if not self.cursor:
@@ -841,11 +957,11 @@ class sqlinter():
         
         # Prepare the query with placeholders
         # We assume the columns are named 'code' and 'product_name'
-        query_sql = f"SELECT `product_name` FROM {sql_safe_tablename} WHERE `code` = %s"
+        query_sql = f"SELECT {col} FROM {sql_safe_tablename} WHERE {key_col} = %s"
 
         try:
             # Execute the query
-            self.cursor.execute(query_sql, (code_value,))
+            self.cursor.execute(query_sql, (key,))
             
             # Fetch one result
             result = self.cursor.fetchone()
@@ -885,5 +1001,5 @@ def clean_db(database):
     database.delete_table(tables[i])
   
 if __name__ == "__main__":
-  dbase = sqlinter("localhost", "hacks2025", "root", "root")
+  dbase = SQLInterface("localhost", "hacks2025", "root", "root")
   dbase.connect()

@@ -1,6 +1,7 @@
 from sql_interface import *
 
-STORE_COLUMNS = "Barcode INT, Name VARCHAR(255), PRIMARY KEY (Barcode)"
+APPROVED_DB_COLUMNS = "Barcode VARCHAR(255), Name VARCHAR(255), PRIMARY KEY (Barcode)"
+STORE_DB_COLUMNS = "StoreID VARCHAR(255), Name VARCHAR(255), PRIMARY KEY (StoreID)"
 
 def fill_reference_db(database, file_path):
   my_columns = {
@@ -15,16 +16,22 @@ def fill_reference_db(database, file_path):
     columns_dict=my_columns
   )
  
- 
-  
 if __name__ == "__main__":
-  dbase = sqlinter("localhost", "hacks2025", "root", "root")
+  dbase = SQLInterface("localhost", "hacks2025", "root", "root")
   dbase.connect()
   
-  fill_reference_db(dbase, "C:/Users/rockstar/Documents/openfoodfacts.csv")
+  #fill_reference_db(dbase, "C:/Users/rockstar/Documents/openfoodfacts.csv")
   
-  #dbase.new_table("store_0", STORE_COLUMNS):w
+  #print(dbase.query("store_0", "Name", "Barcode", "0028400020008"))
+  
+  print(dbase.get_table_as_json_payload("store_0"))
+  print(dbase.get_table_as_json_payload("stores"))
+  
+  #dbase.new_table("stores", STORE_DB_COLUMNS)
+  #dbase.new_table("store_0", APPROVED_DB_COLUMNS)
   #dbase.delete_table("store_0")
-  tlist = clean_str_arr(dbase.list_tables(), ['(', ')', ','])
-  print("QUERY TEST")
-  print(dbase.query("fooddb", '0028400020008'))
+  #dbase.delete_table("stores")
+  #dbase.insert_row("store_0", {'Barcode':"0028400020008", 'Name':"Test Product"})
+  #tlist = clean_str_arr(dbase.list_tables(), ['(', ')', ','])
+  #print("QUERY TEST")
+  #print(dbase.query("fooddb", '0028400020008'))
