@@ -41,7 +41,7 @@ class sqlinter():
     except Error as e:
       print(f"There was a problem connecting to the database: {e}")
   
-  #return a list of all tables in database
+  # return a list of all tables in database
   def list_tables(self):
     self.cursor.execute(f"SHOW TABLES;")
     return self.cursor.fetchall()
@@ -887,13 +887,3 @@ def clean_db(database):
 if __name__ == "__main__":
   dbase = sqlinter("localhost", "hacks2025", "root", "root")
   dbase.connect()
-  #clean_db(dbase)
-  
-  '''
-  #dbase.new_table("store_0", "Barcode INT, Name VARCHAR(255), PRIMARY KEY (Barcode)")a
-  '''
-  
-  #tlist = clean_str_arr(dbase.list_tables(), ['(', ')', ','])
-  
-  #print("QUERY TEST")
-  #print(dbase.query("fooddb", '0 028400020008'))
