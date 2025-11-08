@@ -887,22 +887,12 @@ def clean_db(database):
 if __name__ == "__main__":
   dbase = sqlinter("localhost", "hacks2025", "root", "root")
   dbase.connect()
-  clean_db(dbase)
+  #clean_db(dbase)
   
   '''
   #dbase.new_table("store_0", "Barcode INT, Name VARCHAR(255), PRIMARY KEY (Barcode)")a
-  my_columns = {
-    'code': 'VARCHAR(255) PRIMARY KEY',       # Example: Use the correct data type
-    'product_name': 'MEDIUMTEXT'
-  }
-  
-  # 2. Call the import function, setting skip_header=True
-  dbase.import_large_tsv(
-    filename='openfoodfacts.csv',
-    tablename='fooddb',
-    columns_dict=my_columns
-  )  
   '''
+  
   #tlist = clean_str_arr(dbase.list_tables(), ['(', ')', ','])
   
   #print("QUERY TEST")
