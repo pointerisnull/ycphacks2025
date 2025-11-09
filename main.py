@@ -23,15 +23,14 @@ if __name__ == "__main__":
   #fill_reference_db(dbase, "C:/Users/rockstar/Documents/openfoodfacts.csv")
   
   #print(dbase.query("store_0", "Name", "Barcode", "0028400020008"))
-  
-  print(dbase.get_table_as_json_payload("store_0"))
-  print(dbase.get_table_as_json_payload("stores"))
-  
   #dbase.new_table("stores", STORE_DB_COLUMNS)
   #dbase.new_table("store_0", APPROVED_DB_COLUMNS)
+  #dbase.insert_row("store_0", {'Barcode':"0028400020008", 'Name':"Test Product"})
+  
+  #print(dbase.get_table_as_json_payload("store_0"))
+  #print(dbase.get_table_as_json_payload("stores"))
+  
   #dbase.delete_table("store_0")
   #dbase.delete_table("stores")
-  #dbase.insert_row("store_0", {'Barcode':"0028400020008", 'Name':"Test Product"})
   #tlist = clean_str_arr(dbase.list_tables(), ['(', ')', ','])
-  #print("QUERY TEST")
-  #print(dbase.query("fooddb", '0028400020008'))
+  #print(dbase.query("eanref", '0028400020008'))
